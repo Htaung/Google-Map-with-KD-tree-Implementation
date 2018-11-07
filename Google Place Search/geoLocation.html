@@ -1,0 +1,84 @@
+<html>
+<head>
+	<title> </title>
+	
+</head>
+<body>
+<!--https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=500&type=restaurant&keyword=cruise&key=AIzaSyC2hmb2Eo-XmZgfJbpKv-hKThIUkZi_AEw-->
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2hmb2Eo-XmZgfJbpKv-hKThIUkZi_AEw&libraries=places">
+	/*
+		if ("geolocation" in navigator) {
+		  /* geolocation is available */
+		  console.log('geolocation is available');
+			/*navigator.geolocation.getCurrentPosition(function(position) {
+				do_something(position.coords.latitude, position.coords.longitude);
+			});
+			*/
+
+			//call back is called multiple time 
+/*		
+		var watchID = navigator.geolocation.watchPosition(function(position) {
+			  do_something(position.coords.latitude, position.coords.longitude);
+			});	
+			console.log('watchID==>' + watchID);
+			// to stop watching the user's location
+			//navigator.geolocation.clearWatch(watchID);	
+		} else {
+		  /* geolocation IS NOT available */
+	/*	  console.log('geolocation is latitudenot available');
+		}
+		
+		function do_something(latitude, longitude){
+			console.log('latitude==>' + latitude);
+			console.log('longitude==>' + longitude);
+		}
+		
+		*/
+		
+		
+
+
+	
+	
+		
+			var service;
+			var infowindow;
+			initialize();
+
+			function initialize() {
+			  var pyrmont = new google.maps.LatLng(-33.8665433,151.1956316);
+
+			  map = new google.maps.Map(document.getElementById('map'), {
+				  center: pyrmont,
+				  zoom: 15
+				});
+
+			  var request = {
+				location: pyrmont,
+				radius: '500',
+				type: ['restaurant']
+			  };
+
+			  service = new google.maps.places.PlacesService(map);
+			  service.nearbySearch(request, callback);
+			}
+
+			function callback(results, status) {
+			  if (status == google.maps.places.PlacesServiceStatus.OK) {
+				for (var i = 0; i < results.length; i++) {
+				  var place = results[i];
+				  cosole.log('place==>' + place);
+				  //createMarker(results[i]);
+				}
+			  }
+			}
+		
+		</script>
+	<p>
+		By default, getCurrentPosition() tries to answer as fast as possible with a low accuracy result. It is useful if you need a quick answer regardless of the accuracy. Devices with a GPS, for example, can take a minute or more to get a GPS fix, so less accurate data (IP location or wifi) may be returned to getCurrentPosition()
+	</p>
+	
+	<div id="map"> </div>
+	
+</body>
+</html>
