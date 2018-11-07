@@ -1,0 +1,170 @@
+<html>
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css">
+      html, body, #map_canvas {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+	.info-window {
+		font-family: 'Montserrat', sans-serif;
+	}
+	.info-content {
+		color: #999;
+	}
+	
+	
+    </style>
+  </head>
+  <body>
+    <div id="map_canvas"></div>
+    
+
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+        <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+		
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script> -->
+    
+	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBu5nZKbeK-WHQ70oqOWo-_4VmwOwKP9YQ"></script>
+		<script src="kdTree.js"></script>
+    <!--<script src="../jquery-1.7.2.min.js"></script> -->
+	<script src="data1.json"></script>
+    <script>
+      var script = '<script src="src/infobubble';
+      if (document.location.search.indexOf('compiled') !== -1) {
+        script += '-compiled';
+      }
+      script += '.js"><' + '/script>';
+      document.write(script);
+    </script>
+
+    <script>
+      var map, tree;
+	  
+//      var numMarkers = 30;
+		var numMarkers = 5;
+      var markers = [];
+      var bounds = {
+        south: -179,
+        west: -88,
+        north: 179,
+        east: 88
+      }
+
+      function initialize() {
+        //map = new google.maps.Map(document.getElementById('map_canvas'),{
+          //zoom: 15,
+		  //"1.311","y":"103.8265"
+          //center: new google.maps.LatLng(51.164181, 10.454150),
+		  //center: new google.maps.LatLng(1.311, 103.8265),
+		  //center: new google.maps.LatLng(1.38889, 103.99056),
+		  //center: new google.maps.LatLng(1.317266, 103.882947),
+          //mapTypeId: google.maps.MapTypeId.ROADMAP
+        //});
+		var mapCanvas = document.getElementById('map_canvas');
+		var location = new google.maps.LatLng(1.38889, 103.99056);
+		var mapOptions = {
+            center: location,
+            zoom: 16,
+            panControl: false,
+            scrollwheel: false,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+		map = new google.maps.Map(mapCanvas, mapOptions);
+		
+        buildPhotoTree();
+      }
+
+      function distance(a, b) {
+        var lat1 = a.latitude,
+        lon1 = a.longitude,
+        lat2 = b.latitude,
+        lon2 = b.longitude;
+        var rad = Math.PI/180;
+
+        var dLat = (lat2-lat1)*rad;
+        var dLon = (lon2-lon1)*rad;
+        var lat1 = lat1*rad;
+        var lat2 = lat2*rad;
+
+        var x = Math.sin(dLat/2);
+        var y = Math.sin(dLon/2);
+
+        var a = x*x + y*y * Math.cos(lat1) * Math.cos(lat2); 
+        return Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      }
+
+      function buildPhotoTree() {
+		var test = 'https://maps.google.com/mapfiles/kml/shapes/parking_lot_maps.png';
+		//test = "test.jpg";
+		//get the points from database and profile photo advisertable		
+		tree = new kdTree(photo1s, distance, ["latitude", "longitude"]);
+		var point = {latitude: 1.38889, longitude: 103.99056};
+		var nearest = tree.nearest(point, numMarkers);
+		  
+		var contentString = '<div id="content">'+
+				'<h1>Uluru</h1>'+
+				'<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
+				'sandstone rock formation in the southern part of the '+
+				'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
+				'south west of the nearest large town, Alice Springs; 450&#160;km '+
+				'(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
+				'features of the Uluru - Kata Tjuta National Park. Uluru is '+
+				'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
+				'Aboriginal people of the area. It has many springs, waterholes, '+
+				'rock caves and ancient paintings. Uluru is listed as a World '+
+				'Heritage Site.</p>'+
+				'<p>Attribution: Uluru, <a href="http://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
+				'http://en.wikipedia.org/w/index.php?title=Uluru</a> '+
+				'(last visited June 22, 2009).</p>'+
+				'</div>';
+				
+	    for(var i=0; i<numMarkers; i++) {
+			var photo = nearest[i][0];
+			photo.icon = test;
+			console.log('near by point' + photo.latitude + 'longitude==>' + photo.longitude + "photo.icon" + photo.icon);
+			createMarker(photo, contentString);
+		}
+      }
+	  
+	  function createMarker(photo, htmlContent){
+		var marker = new google.maps.Marker({
+			position: new google.maps.LatLng(photo.latitude, photo.longitude),
+			icon: photo.icon,
+			title: photo.title,
+			map: map
+		});
+		var div = document.createElement('DIV');
+		div.innerHTML = htmlContent;
+		var infoBubble = new InfoBubble({
+						maxWidth: 400,
+						shadowStyle: 1,
+						padding: 10,
+						borderRadius: 4,
+						arrowSize: 10,
+						borderWidth: 1,
+						borderColor: '#2c2c2c',
+						disableAutoPan: true,
+						arrowPosition: 30,
+						arrowStyle: 2
+						});
+		infoBubble.addTab("Image", "<div><img src='phwe.jpg'/> </div>");
+		infoBubble.addTab("Profile", div);
+		
+		google.maps.event.addListener(marker, 'click', function() {
+			if (!infoBubble.isOpen()) {
+				infoBubble.open(map, marker);
+          }
+		});
+		return marker;
+	  }
+
+      google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </body>
+</html>
+
